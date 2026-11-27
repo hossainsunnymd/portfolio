@@ -1,10 +1,38 @@
 import { useEffect, useRef, useState,RefObject } from "react";
 import PublicPanel from "../layout/PublicPanel";
 import PageHero from "@/pages/components/public/PageHero";
+import {
+    formatExperienceDates,
+    groupSkills,
+} from "@/types/portfolio";
+import type {
+    ClientRecord,
+    ExperienceRecord,
+    SectionRecord,
+    SkillRecord,
+} from "@/types/portfolio";
 
+type AboutFact = { label: string; value: string };
 
-const useInView =<T extends HTMLElement = HTMLElement> (threshold = 0.15): [RefObject<T | null>, boolean] => {
-    const ref = useRef(null);
+function getFacts(section: SectionRecord): AboutFact[] {
+    const facts = section.config?.facts;
+    if (!Array.isArray(facts)) return [];
+
+    return facts.filter(
+        (fact): fact is AboutFact =>
+            typeof fact === "object" &&
+            fact !== null &&
+            "label" in fact &&
+            typeof fact.label === "string" &&
+            "value" in fact &&
+            typeof fact.value === "string",
+    );
+}
+
+const useInView = <T extends HTMLElement = HTMLElement>(
+    threshold = 0.15,
+): [RefObject<T | null>, boolean] => {
+    const ref = useRef<T | null>(null);
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -31,66 +59,41 @@ const useInView =<T extends HTMLElement = HTMLElement> (threshold = 0.15): [RefO
     return [ref, isVisible];
 };
 
-const skillGroups = [
-    {
-        category: "Backend Development",
-        skills: [
-            { name: "PHP", level: 90 },
-            { name: "Laravel", level: 85 },
-            { name: "REST API", level: 80 },
-        ],
-    },
-    {
-        category: "Frontend Development",
-        skills: [
-            { name: "Vue.js", level: 85 },
-            { name: "React.js", level: 75 },
-            { name: "Tailwind CSS", level: 90 },
-        ],
-    },
-    {
-        category: "Database & Tools",
-        skills: [
-            { name: "MySQL", level: 85 },
-            { name: "Git & GitHub", level: 80 },
-            { name: "Postman", level: 85 },
-        ],
-    },
-];
+export default function About({
+    sections,
+    skills,
+    experiences: experienceRecords,
+    clients: clientRecords,
+}: {
+    sections: Record<string, SectionRecord>;
+    skills: SkillRecord[];
+    experiences: ExperienceRecord[];
+    clients: ClientRecord[];
+}) {
+    const section = sections.about;
+    const skillsSection = sections.skills;
+    const experienceSection = sections.experience;
+    const clientsSection = sections.clients;
+    const skillGroups = groupSkills(skills);
+    const experiences = experienceRecords
+        .filter(
+            (experience) =>
+                experience.enabled && experience.kind === "work",
+        )
+        .sort((a, b) => a.position - b.position);
+    const clients = clientRecords
+        .filter((client) => client.enabled)
+        .sort((a, b) => a.position - b.position);
+    const body =
+        typeof section.config?.body === "string"
+            ? section.config.body
+            : (section.subheading ?? "");
+    const facts = getFacts(section);
+    const profileImage =
+        typeof section.config?.image_path === "string"
+            ? section.config.image_path
+            : null;
 
-const experiences = [
-    {
-        period: "2024 - Present",
-        role: "Full Stack Web Developer",
-        company: "ABC Technologies",
-        location: "Dhaka, Bangladesh",
-        isCurrent: true,
-        summary:
-            "Developing scalable web applications using Laravel, Vue.js, MySQL and modern frontend technologies.",
-        highlights: [
-            "Developed RESTful APIs and backend systems.",
-            "Built responsive admin dashboards.",
-            "Managed database design and optimization.",
-        ],
-    },
-    {
-        period: "2022 - 2024",
-        role: "Junior Web Developer",
-        company: "XYZ Software",
-        location: "Dhaka, Bangladesh",
-        isCurrent: false,
-        summary:
-            "Worked on frontend development, backend integration and database management for different web projects.",
-        highlights: [
-            "Developed user-friendly interfaces.",
-            "Integrated third-party APIs.",
-        ],
-    },
-];
-
-const clients = ["Company One", "Company Two", "Company Three", "Company Four"];
-
-export default function About() {
     const [aboutRef, aboutVisible] = useInView(0.15);
     const [skillsRef, skillsVisible] = useInView(0.15);
     const [expRef, expVisible] = useInView(0.15);
@@ -99,7 +102,7 @@ export default function About() {
     return (
         <PublicPanel>
             {/* Page Hero */}
-            <PageHero />
+            <PageHero section={section} />
 
             {/* About Section */}
             <section
@@ -107,7 +110,11 @@ export default function About() {
                 className="overflow-hidden border-b border-line py-14 sm:py-20"
             >
                 <div className="container-page">
-                    <div className="grid gap-12 lg:grid-cols-[1fr_0.7fr] lg:gap-16">
+                    <div
+                        className={`grid gap-12 ${
+                            profileImage ? "lg:grid-cols-[1fr_0.7fr]" : ""
+                        } lg:gap-16`}
+                    >
                         {/* About Content */}
                         <div
                             className={`transition-all duration-700 ease-out ${
@@ -117,67 +124,26 @@ export default function About() {
                             }`}
                         >
                             <div className="max-w-none space-y-5 text-base leading-relaxed text-muted">
-                                <p>
-                                    Hello! I'm a Full Stack Web Developer
-                                    specializing in Laravel, PHP, Vue.js and
-                                    modern frontend technologies. I enjoy
-                                    creating clean, efficient and scalable web
-                                    applications.
-                                </p>
-
-                                <p>
-                                    My development experience includes building
-                                    REST APIs, admin dashboards, inventory
-                                    management systems, e-commerce platforms and
-                                    dynamic web applications.
-                                </p>
-
-                                <p>
-                                    I always try to write clean, maintainable
-                                    code and follow industry-standard
-                                    development practices. My goal is to build
-                                    applications that solve real-world problems.
-                                </p>
+                                {body.split(/\n{2,}/).filter(Boolean).map((paragraph) => (
+                                    <p key={paragraph}>{paragraph}</p>
+                                ))}
                             </div>
 
                             {/* Personal Facts */}
-                            <dl className="mt-10 grid gap-x-8 gap-y-5 border-t border-line pt-8 sm:grid-cols-2">
-                                <div>
-                                    <dt className="text-xs font-medium uppercase tracking-wider text-subtle">
-                                        Name
-                                    </dt>
-                                    <dd className="mt-1 text-sm text-ink">
-                                        John Doe
-                                    </dd>
-                                </div>
-
-                                <div>
-                                    <dt className="text-xs font-medium uppercase tracking-wider text-subtle">
-                                        Location
-                                    </dt>
-                                    <dd className="mt-1 text-sm text-ink">
-                                        Dhaka, Bangladesh
-                                    </dd>
-                                </div>
-
-                                <div>
-                                    <dt className="text-xs font-medium uppercase tracking-wider text-subtle">
-                                        Email
-                                    </dt>
-                                    <dd className="mt-1 text-sm text-ink">
-                                        john@example.com
-                                    </dd>
-                                </div>
-
-                                <div>
-                                    <dt className="text-xs font-medium uppercase tracking-wider text-subtle">
-                                        Experience
-                                    </dt>
-                                    <dd className="mt-1 text-sm text-ink">
-                                        3+ Years
-                                    </dd>
-                                </div>
-                            </dl>
+                            {facts.length > 0 && (
+                                <dl className="mt-10 grid gap-x-8 gap-y-5 border-t border-line pt-8 sm:grid-cols-2">
+                                    {facts.map((fact) => (
+                                        <div key={fact.label}>
+                                            <dt className="text-xs font-medium uppercase tracking-wider text-subtle">
+                                                {fact.label}
+                                            </dt>
+                                            <dd className="mt-1 text-sm text-ink">
+                                                {fact.value}
+                                            </dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            )}
 
                             {/* Buttons */}
                             <div className="mt-9 flex flex-wrap gap-3">
@@ -198,24 +164,25 @@ export default function About() {
                             </div>
                         </div>
 
-                        {/* Profile Image */}
-                        <div
-                            style={{ transitionDelay: "150ms" }}
-                            className={`order-first transition-all duration-700 ease-out lg:order-last ${
-                                aboutVisible
-                                    ? "translate-y-0 opacity-100"
-                                    : "translate-y-8 opacity-0"
-                            }`}
-                        >
-                            <div className="sticky top-24 overflow-hidden rounded-2xl border border-line bg-elevated">
-                                <img
-                                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800"
-                                    alt="Profile"
-                                    loading="lazy"
-                                    className="aspect-[3/4] w-full object-cover"
-                                />
+                        {profileImage && (
+                            <div
+                                style={{ transitionDelay: "150ms" }}
+                                className={`order-first transition-all duration-700 ease-out lg:order-last ${
+                                    aboutVisible
+                                        ? "translate-y-0 opacity-100"
+                                        : "translate-y-8 opacity-0"
+                                }`}
+                            >
+                                <div className="sticky top-24 overflow-hidden rounded-2xl border border-line bg-elevated">
+                                    <img
+                                        src={profileImage}
+                                        alt={section.name}
+                                        loading="lazy"
+                                        className="aspect-[3/4] w-full object-cover"
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </section>
@@ -233,7 +200,7 @@ export default function About() {
                                 : "translate-y-6 opacity-0"
                         }`}
                     >
-                        Skills & Tools
+                        {skillsSection.heading ?? skillsSection.name}
                     </h2>
 
                     <div className="mt-8 grid gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
@@ -255,7 +222,7 @@ export default function About() {
 
                                 <ul className="mt-4 space-y-3.5">
                                     {group.skills.map((skill, skillIndex) => (
-                                        <li key={skill.name}>
+                                        <li key={skill.id}>
                                             <div className="flex items-baseline justify-between gap-3">
                                                 <span className="text-sm font-medium text-ink">
                                                     {skill.name}
@@ -301,13 +268,13 @@ export default function About() {
                                 : "translate-y-6 opacity-0"
                         }`}
                     >
-                        Experience
+                        {experienceSection.heading ?? experienceSection.name}
                     </h2>
 
                     <ol className="relative mt-8 space-y-9 border-l border-line pl-7">
                         {experiences.map((exp, index) => (
                             <li
-                                key={`${exp.period}-${exp.role}`}
+                                key={exp.id}
                                 style={{
                                     transitionDelay: `${150 + index * 150}ms`,
                                 }}
@@ -319,14 +286,14 @@ export default function About() {
                             >
                                 <span
                                     className={`absolute -left-[calc(1.75rem+4.5px)] top-1.5 h-[9px] w-[9px] rounded-full ring-4 ring-bg ${
-                                        exp.isCurrent
+                                        exp.is_current
                                             ? "bg-accent"
                                             : "bg-line-strong"
                                     }`}
                                 ></span>
 
                                 <p className="font-mono text-[11px] uppercase tracking-wider text-subtle">
-                                    {exp.period}
+                                    {formatExperienceDates(exp)}
                                 </p>
 
                                 <h3 className="mt-1.5 text-[15px] font-semibold text-ink">
@@ -334,7 +301,7 @@ export default function About() {
                                 </h3>
 
                                 <p className="mt-0.5 text-sm text-accent">
-                                    {exp.company}
+                                    {exp.organization}
                                     <span className="text-subtle">
                                         {" "}
                                         · {exp.location}
@@ -346,7 +313,7 @@ export default function About() {
                                 </p>
 
                                 <ul className="mt-3 space-y-1.5">
-                                    {exp.highlights.map((item) => (
+                                    {(exp.achievements ?? []).map((item) => (
                                         <li
                                             key={item}
                                             className="flex gap-2.5 text-sm text-muted"
@@ -378,18 +345,18 @@ export default function About() {
                         }`}
                     >
                         <h2 className="text-xl font-semibold text-ink">
-                            Trusted By
+                            {clientsSection.heading ?? clientsSection.name}
                         </h2>
 
                         <p className="mt-3 text-sm text-muted">
-                            Organizations and businesses I have worked with.
+                            {clientsSection.subheading}
                         </p>
                     </div>
 
                     <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
                         {clients.map((client, index) => (
                             <div
-                                key={client}
+                                key={client.id}
                                 style={{
                                     transitionDelay: `${120 + index * 90}ms`,
                                 }}
@@ -399,9 +366,18 @@ export default function About() {
                                         : "translate-y-6 opacity-0"
                                 }`}
                             >
-                                <span className="text-lg font-bold text-subtle">
-                                    {client}
-                                </span>
+                                {client.logo_path ? (
+                                    <img
+                                        src={client.logo_path}
+                                        alt={client.name}
+                                        className="max-h-12 max-w-full object-contain"
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <span className="text-lg font-bold text-subtle">
+                                        {client.name}
+                                    </span>
+                                )}
                             </div>
                         ))}
                     </div>

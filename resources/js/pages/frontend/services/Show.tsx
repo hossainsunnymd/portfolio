@@ -2,82 +2,20 @@
 import React from "react";
 import { Link } from "@inertiajs/react";
 import PublicPanel from "@/pages/layout/PublicPanel";
+import ServiceIcon from "@/pages/components/public/ServiceIcon";
+import type { ServiceRecord } from "@/types/portfolio";
 
-
-const service = {
-    id: 1,
-    title: "Custom Web Application Development",
-    slug: "web-application-development",
-    icon: "code",
-    summary:
-        "Build powerful, scalable and secure web applications tailored to your business requirements.",
-    starting_price: "Starting from $500",
-    body: `
-        <h2>Custom Web Application Development</h2>
-        <p>
-            We build modern web applications that help businesses
-            automate their workflows, improve productivity and deliver
-            better customer experiences.
-        </p>
-
-        <h2>Our Development Process</h2>
-        <p>
-            Every project starts with understanding your business goals.
-            We then plan, design, develop and test the application
-            to ensure quality and performance.
-        </p>
-
-        <h2>Why Choose Our Service?</h2>
-        <p>
-            Our applications are built with modern technologies,
-            clean architecture and scalable solutions.
-            We focus on performance, security and maintainability.
-        </p>
-    `,
-    features: [
-        "Custom Web Application Development",
-        "Laravel Backend Development",
-        "React and Vue.js Frontend",
-        "REST API Development",
-        "Database Design and Optimization",
-        "Authentication and Authorization",
-        "Payment Gateway Integration",
-        "Deployment and Maintenance",
-    ],
+type Props = {
+    service: ServiceRecord;
+    others: ServiceRecord[];
 };
 
-const others = [
-    {
-        id: 2,
-        title: "E-commerce Development",
-        slug: "ecommerce-development",
-        icon: "shopping-cart",
-    },
-    {
-        id: 3,
-        title: "POS Software Development",
-        slug: "pos-software-development",
-        icon: "monitor",
-    },
-    {
-        id: 4,
-        title: "API Development",
-        slug: "api-development",
-        icon: "code",
-    },
-    {
-        id: 5,
-        title: "Website Maintenance",
-        slug: "website-maintenance",
-        icon: "settings",
-    },
-];
+export default function Show({ service, others }: Props) {
+    const bodyParagraphs = (service.body ?? "")
+        .split(/\n{2,}/)
+        .filter(Boolean);
+    const features = service.features ?? [];
 
-
-export default function Show({
-
-    others = [],
-}) {
     return (
         <PublicPanel>
             <article>
@@ -106,20 +44,7 @@ export default function Show({
                         </Link>
 
                         <span className="mt-7 grid h-12 w-12 place-items-center rounded-[calc(var(--radius-base)*0.9)] bg-accent-soft text-accent">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="22"
-                                height="22"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z" />
-                                <path d="m19 14 1.2 2.8L23 18l-2.8 1.2L19 22l-1.2-2.8L15 18l2.8-1.2L19 14Z" />
-                            </svg>
+                            <ServiceIcon name={service.icon} />
                         </span>
 
                         <h1 className="mt-5 max-w-3xl text-[clamp(1.9rem,4.2vw,2.9rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-ink">
@@ -132,34 +57,28 @@ export default function Show({
                             </p>
                         )}
 
-                        {service.starting_price && (
-                            <p className="mt-5 font-mono text-sm text-accent">
-                                {service.starting_price}
-                            </p>
-                        )}
                     </div>
                 </header>
 
                 <div className="container-page section-y">
                     <div className="grid gap-12 lg:grid-cols-[1fr_18rem] lg:gap-16">
                         <div>
-                            {service.body && (
-                                <div
-                                    dangerouslySetInnerHTML={{
-                                        __html: service.body,
-                                    }}
-                                    className="prose-site prose max-w-none prose-p:leading-relaxed"
-                                />
+                            {bodyParagraphs.length > 0 && (
+                                <div className="prose-site prose max-w-none prose-p:leading-relaxed">
+                                    {bodyParagraphs.map((paragraph) => (
+                                        <p key={paragraph}>{paragraph}</p>
+                                    ))}
+                                </div>
                             )}
 
-                            {service.features?.length > 0 && (
+                            {features.length > 0 && (
                                 <div className="mt-10">
                                     <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
                                         What's included
                                     </h2>
 
                                     <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                                        {service.features.map((feature, index) => (
+                                        {features.map((feature, index) => (
                                             <li
                                                 key={index}
                                                 className="flex gap-2.5 rounded-[var(--radius-base)] border border-line bg-surface p-4 text-sm text-muted"
@@ -231,7 +150,7 @@ export default function Show({
                                         {others.map((item) => (
                                             <li key={item.slug}>
                                                 <Link
-                                                    href={`/services/${item.slug}`}
+                                                    href={`/services/show?slug=${item.slug}`}
                                                     className="flex items-center gap-2.5 rounded-[var(--radius-base)] px-3 py-2.5 text-sm text-muted transition-colors hover:bg-elevated hover:text-ink"
                                                 >
                                                     <svg

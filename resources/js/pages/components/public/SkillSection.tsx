@@ -1,35 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
+import { groupSkills } from "@/types/portfolio";
+import type { SectionRecord, SkillRecord } from "@/types/portfolio";
 
-const skillGroups = [
-    {
-        category: "Frontend Development",
-        skills: [
-            { name: "HTML & CSS", level: 95 },
-            { name: "JavaScript", level: 85 },
-            { name: "Vue.js", level: 80 },
-        ],
-    },
-    {
-        category: "Backend Development",
-        skills: [
-            { name: "PHP", level: 90 },
-            { name: "Laravel", level: 90 },
-            { name: "REST API", level: 85 },
-        ],
-    },
-    {
-        category: "Database & Tools",
-        skills: [
-            { name: "MySQL", level: 85 },
-            { name: "Git & GitHub", level: 80 },
-            { name: "Docker", level: 65 },
-        ],
-    },
-];
-
-const SkillSection = () => {
+const SkillSection = ({
+    section,
+    skills,
+}: {
+    section: SectionRecord;
+    skills: SkillRecord[];
+}) => {
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
+    const skillGroups = groupSkills(skills);
+    const eyebrow =
+        typeof section.config?.eyebrow === "string"
+            ? section.config.eyebrow
+            : section.name;
 
     useEffect(() => {
         const element = sectionRef.current;
@@ -68,16 +54,15 @@ const SkillSection = () => {
                     }`}
                 >
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent">
-                        My Expertise
+                        {eyebrow}
                     </p>
 
                     <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink">
-                        Skills & Technologies
+                        {section.heading}
                     </h2>
 
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
-                        Technologies and tools I use to build modern, scalable
-                        and user-friendly web applications.
+                        {section.subheading}
                     </p>
                 </div>
 
@@ -101,7 +86,7 @@ const SkillSection = () => {
 
                             <ul className="mt-5 space-y-4">
                                 {group.skills.map((skill, skillIndex) => (
-                                    <li key={skill.name}>
+                                    <li key={skill.id}>
                                         <div className="flex items-baseline justify-between gap-3">
                                             <span className="text-sm font-medium text-ink">
                                                 {skill.name}

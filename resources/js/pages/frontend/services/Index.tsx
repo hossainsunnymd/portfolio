@@ -1,46 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import PageHero from "@/pages/components/public/PageHero";
 import PublicPanel from "@/pages/layout/PublicPanel";
+import ServiceIcon from "@/pages/components/public/ServiceIcon";
+import type { SectionRecord, ServiceRecord } from "@/types/portfolio";
 
-const serviceCards = [
-    {
-        href: "/services/web-development",
-        price: "Starting at $100",
-        title: "Web Development",
-        description:
-            "Professional web development services for modern businesses.",
-        features: [
-            "Responsive Website Design",
-            "SEO Friendly Structure",
-            "Fast Loading Performance",
-        ],
-        icon: (
-            <>
-                <path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z" />
-                <path d="M19 14v4" />
-                <path d="M21 16h-4" />
-            </>
-        ),
-    },
-    {
-        href: "/services/software-development",
-        price: "Starting at $200",
-        title: "Software Development",
-        description:
-            "Custom software solutions designed to improve business operations.",
-        features: ["Custom Software Solutions", "Database Integration"],
-        icon: (
-            <>
-                <path d="m16 18 6-6-6-6" />
-                <path d="m8 6-6 6 6 6" />
-                <path d="m14 4-4 16" />
-            </>
-        ),
-    },
-];
-
-const Index = () => {
-    const sectionRef = useRef(null);
+const Index = ({
+    services,
+    section,
+}: {
+    services: ServiceRecord[];
+    section: SectionRecord | null;
+}) => {
+    const sectionRef = useRef<HTMLElement | null>(null);
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
@@ -67,13 +38,13 @@ const Index = () => {
 
     return (
         <PublicPanel>
-            <PageHero />
+            <PageHero section={section ?? undefined} />
             <section ref={sectionRef} className="section-y overflow-hidden">
                 <div className="container-page">
                     <div className="grid gap-6 lg:grid-cols-2">
-                        {serviceCards.map((service, index) => (
+                        {services.map((service, index) => (
                             <article
-                                key={service.href}
+                                key={service.id}
                                 style={{
                                     transitionDelay: `${120 + index * 140}ms`,
                                 }}
@@ -85,29 +56,13 @@ const Index = () => {
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[calc(var(--radius-base)*0.8)] bg-accent-soft text-accent">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            {service.icon}
-                                        </svg>
-                                    </span>
-
-                                    <span className="shrink-0 rounded-full border border-line bg-elevated px-2.5 py-1 font-mono text-[11px] text-muted">
-                                        {service.price}
+                                        <ServiceIcon name={service.icon} />
                                     </span>
                                 </div>
 
                                 <h2 className="mt-5 text-[17px] font-semibold text-ink">
                                     <a
-                                        href={service.href}
+                                        href={`/services/show?slug=${service.slug}`}
                                         className="after:absolute after:inset-0 after:content-['']"
                                     >
                                         {service.title}
@@ -115,11 +70,11 @@ const Index = () => {
                                 </h2>
 
                                 <p className="mt-2.5 text-sm leading-relaxed text-muted">
-                                    {service.description}
+                                    {service.summary}
                                 </p>
 
                                 <ul className="mt-5 flex-1 space-y-2 border-t border-line pt-5">
-                                    {service.features.map((feature) => (
+                                    {(service.features ?? []).map((feature) => (
                                         <li
                                             key={feature}
                                             className="flex gap-2.5 text-sm text-muted"
@@ -175,24 +130,15 @@ const Index = () => {
                         }`}
                     >
                         <h2 className="text-lg font-semibold text-ink">
-                            Not sure which you need?
+                            Need something more specific?
                         </h2>
 
                         <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted">
-                            There are three ways to work together — hourly, a
-                            fixed-scope build, or a full application. Tell me
-                            what you are trying to do and I will point you at
-                            the right one.
+                            Tell me what you are trying to build and I will
+                            recommend the right approach.
                         </p>
 
                         <div className="mt-6 flex flex-wrap justify-center gap-3">
-                            <a
-                                href="/pricing"
-                                className="inline-flex items-center justify-center rounded-md border border-line px-5 py-2.5 text-sm font-medium text-ink transition hover:bg-elevated"
-                            >
-                                Compare packages
-                            </a>
-
                             <a
                                 href="/contact"
                                 className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90"

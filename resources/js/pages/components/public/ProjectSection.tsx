@@ -1,39 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
+import type { ProjectRecord, SectionRecord } from "@/types/portfolio";
 
-const PROJECTS = [
-  {
-    id: 1,
-    category: "E-commerce",
-    title: "E-commerce Website",
-    href: "/projects/ecommerce-website",
-    image: "/images/projects/ecommerce.jpg",
-    description:
-      "A modern online shopping platform with product management, cart and secure checkout.",
-    tech: ["Laravel", "Vue.js", "MySQL"],
-  },
-  {
-    id: 2,
-    category: "Business Application",
-    title: "POS Management System",
-    href: "/projects/pos-system",
-    image: "/images/projects/pos.jpg",
-    description:
-      "A complete point of sale solution for managing products, sales, inventory and invoices.",
-    tech: ["Laravel", "Inertia.js", "Tailwind CSS"],
-  },
-  {
-    id: 3,
-    category: "Inventory Management",
-    title: "Inventory Management System",
-    href: "/projects/inventory-system",
-    image: "/images/projects/inventory.jpg",
-    description:
-      "A powerful inventory solution for tracking stock, purchases, suppliers and product movements.",
-    tech: ["PHP", "Laravel", "MySQL"],
-  },
-];
-
-const ProjectSection = () => {
+const ProjectSection = ({
+  projects,
+  section,
+}: {
+  projects: ProjectRecord[];
+  section: SectionRecord;
+}) => {
   const gridRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -65,16 +39,17 @@ const ProjectSection = () => {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-              Our Work
+              {typeof section.config?.eyebrow === "string"
+                ? section.config.eyebrow
+                : section.name}
             </p>
 
             <h2 className="text-3xl font-semibold tracking-tight text-ink">
-              Featured Projects
+              {section.heading}
             </h2>
 
             <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-              Explore some of our recent projects and digital solutions we&apos;ve
-              built for our clients.
+              {section.subheading}
             </p>
           </div>
 
@@ -101,7 +76,13 @@ const ProjectSection = () => {
         </div>
 
         <div ref={gridRef} className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PROJECTS.map((project, index) => (
+          {projects
+            .filter(
+              (project) =>
+                project.status === "published" && project.is_featured,
+            )
+            .sort((a, b) => a.position - b.position)
+            .map((project, index) => (
             <article
               key={project.id}
               style={{
@@ -114,32 +95,40 @@ const ProjectSection = () => {
               }}
               className="group overflow-hidden rounded-xl border border-line bg-surface hover:bg-elevated motion-reduce:transform-none motion-reduce:opacity-100 motion-reduce:transition-none"
             >
-              <a href={project.href} className="block overflow-hidden">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  loading="lazy"
-                  className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+              <a
+                href={`/projects/show?slug=${project.slug}`}
+                className="block overflow-hidden"
+              >
+                {project.cover_path && (
+                  <img
+                    src={project.cover_path}
+                    alt={project.title}
+                    loading="lazy"
+                    className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
               </a>
 
               <div className="p-6">
                 <p className="text-xs font-medium uppercase tracking-wider text-accent">
-                  {project.category}
+                  {project.category?.name}
                 </p>
 
                 <h3 className="mt-2 text-lg font-semibold text-ink">
-                  <a href={project.href} className="hover:text-accent">
+                  <a
+                    href={`/projects/show?slug=${project.slug}`}
+                    className="hover:text-accent"
+                  >
                     {project.title}
                   </a>
                 </h3>
 
                 <p className="mt-3 text-sm leading-relaxed text-muted">
-                  {project.description}
+                  {project.summary}
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {project.tech.map((item) => (
+                  {(project.tech ?? []).map((item) => (
                     <span
                       key={item}
                       className="rounded-full bg-accent-soft px-3 py-1 text-xs text-accent"
@@ -150,7 +139,7 @@ const ProjectSection = () => {
                 </div>
 
                 <a
-                  href={project.href}
+                  href={`/projects/show?slug=${project.slug}`}
                   className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-ink transition-colors hover:text-accent"
                 >
                   View Project
@@ -171,7 +160,7 @@ const ProjectSection = () => {
                 </a>
               </div>
             </article>
-          ))}
+            ))}
         </div>
       </div>
     </section>

@@ -1,8 +1,30 @@
 import React, { useEffect, useRef, useState } from "react";
+import type { SectionRecord } from "@/types/portfolio";
 
-const CtaSection = () => {
+const CtaSection = ({ section }: { section: SectionRecord }) => {
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
+    const config = section.config ?? {};
+    const primaryLabel =
+        typeof config.primary_cta_label === "string"
+            ? config.primary_cta_label
+            : "Get in touch";
+    const primaryUrl =
+        typeof config.primary_cta_url === "string" &&
+        config.primary_cta_url.startsWith("/") &&
+        !config.primary_cta_url.startsWith("//")
+            ? config.primary_cta_url
+            : "/contact";
+    const secondaryLabel =
+        typeof config.secondary_cta_label === "string"
+            ? config.secondary_cta_label
+            : null;
+    const secondaryUrl =
+        typeof config.secondary_cta_url === "string" &&
+        config.secondary_cta_url.startsWith("/") &&
+        !config.secondary_cta_url.startsWith("//")
+            ? config.secondary_cta_url
+            : null;
 
     useEffect(() => {
         const element = sectionRef.current;
@@ -54,20 +76,19 @@ const CtaSection = () => {
                         }`}
                     >
                         <h2 className="text-[clamp(1.6rem,3.4vw,2.3rem)] font-semibold leading-tight text-ink">
-                            Let's Work Together
+                            {section.heading}
                         </h2>
 
                         <p className="mt-4 text-[15px] leading-relaxed text-muted">
-                            Have a project in mind? Let's discuss how we can
-                            work together to bring your ideas to life.
+                            {section.subheading}
                         </p>
 
                         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                             <a
-                                href="/contact"
+                                href={primaryUrl}
                                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:opacity-90"
                             >
-                                Get In Touch
+                                {primaryLabel}
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="17"
@@ -84,23 +105,15 @@ const CtaSection = () => {
                                 </svg>
                             </a>
 
-                            <a
-                                href="/pricing"
-                                className="inline-flex items-center justify-center rounded-lg border border-line px-6 py-3 text-sm font-semibold text-ink transition-all duration-300 hover:bg-surface"
-                            >
-                                View Pricing
-                            </a>
+                            {secondaryLabel && secondaryUrl && (
+                                <a
+                                    href={secondaryUrl}
+                                    className="inline-flex items-center justify-center rounded-lg border border-line px-6 py-3 text-sm font-semibold text-ink transition-all duration-300 hover:bg-surface"
+                                >
+                                    {secondaryLabel}
+                                </a>
+                            )}
                         </div>
-
-                        <p className="mt-7 text-sm text-muted">
-                            Or email me directly at{" "}
-                            <a
-                                href="mailto:hello@example.com"
-                                className="font-medium text-accent hover:underline"
-                            >
-                                hello@example.com
-                            </a>
-                        </p>
                     </div>
                 </div>
             </div>

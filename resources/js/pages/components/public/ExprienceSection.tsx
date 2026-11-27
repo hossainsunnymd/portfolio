@@ -1,55 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
+import {
+    formatExperienceDates,
+} from "@/types/portfolio";
+import type { ExperienceRecord, SectionRecord } from "@/types/portfolio";
 
-const experiences = [
-    {
-        period: "2024 - Present",
-        role: "Full Stack Web Developer",
-        company: "Company Name",
-        companyUrl: "#",
-        location: "Bangladesh",
-        isCurrent: true,
-        summary:
-            "Working on modern web applications using Laravel, PHP, Vue.js and MySQL.",
-        highlights: [
-            "Developing scalable web applications.",
-            "Building REST APIs and database structures.",
-        ],
-    },
-    {
-        period: "2022 - 2024",
-        role: "Junior Web Developer",
-        company: "Previous Company",
-        companyUrl: null,
-        location: "Bangladesh",
-        isCurrent: false,
-        summary:
-            "Worked on frontend and backend development and maintained existing web applications.",
-        highlights: [
-            "Developed responsive user interfaces.",
-            "Integrated backend APIs.",
-        ],
-    },
-];
-
-const educations = [
-    {
-        period: "2020 - 2024",
-        title: "Bachelor Degree",
-        institution: "University Name",
-        description:
-            "Completed academic studies and developed foundational knowledge.",
-    },
-    {
-        period: "2023",
-        title: "Web Development Training",
-        institution: "Training Institute",
-        description: "Learned modern web development technologies.",
-    },
-];
-
-const ExprienceSection = () => {
+const ExprienceSection = ({
+    section,
+    experiences: records,
+}: {
+    section: SectionRecord;
+    experiences: ExperienceRecord[];
+}) => {
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
+    const experiences = records
+        .filter(
+            (experience) =>
+                experience.enabled && experience.kind === "work",
+        )
+        .sort((a, b) => a.position - b.position);
+    const educations = records
+        .filter(
+            (experience) =>
+                experience.enabled &&
+                (experience.kind === "education" ||
+                    experience.kind === "certification"),
+        )
+        .sort((a, b) => a.position - b.position);
+    const eyebrow =
+        typeof section.config?.eyebrow === "string"
+            ? section.config.eyebrow
+            : section.name;
 
     useEffect(() => {
         const element = sectionRef.current;
@@ -88,16 +69,15 @@ const ExprienceSection = () => {
                     }`}
                 >
                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent">
-                        My Journey
+                        {eyebrow}
                     </p>
 
                     <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink">
-                        Experience & Education
+                        {section.heading}
                     </h2>
 
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
-                        My professional experience, career journey and
-                        educational background.
+                        {section.subheading}
                     </p>
                 </div>
 
@@ -106,7 +86,7 @@ const ExprienceSection = () => {
                     <ol className="relative space-y-9 border-l border-line pl-7">
                         {experiences.map((exp, index) => (
                             <li
-                                key={`${exp.period}-${exp.role}`}
+                                key={exp.id}
                                 style={{
                                     transitionDelay: `${150 + index * 140}ms`,
                                 }}
@@ -119,14 +99,14 @@ const ExprienceSection = () => {
                                 <span
                                     aria-hidden="true"
                                     className={`absolute -left-[calc(1.75rem+4.5px)] top-1.5 h-[9px] w-[9px] rounded-full ring-4 ring-bg ${
-                                        exp.isCurrent
+                                        exp.is_current
                                             ? "bg-accent"
                                             : "bg-line-strong"
                                     }`}
                                 ></span>
 
                                 <p className="font-mono text-[11px] uppercase tracking-wider text-subtle">
-                                    {exp.period}
+                                    {formatExperienceDates(exp)}
                                 </p>
 
                                 <h3 className="mt-1.5 text-[15px] font-semibold text-ink">
@@ -134,17 +114,17 @@ const ExprienceSection = () => {
                                 </h3>
 
                                 <p className="mt-0.5 text-sm text-accent">
-                                    {exp.companyUrl ? (
+                                    {exp.url ? (
                                         <a
-                                            href={exp.companyUrl}
+                                            href={exp.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="hover:underline"
                                         >
-                                            {exp.company}
+                                            {exp.organization}
                                         </a>
                                     ) : (
-                                        exp.company
+                                        exp.organization
                                     )}
 
                                     <span className="text-subtle">
@@ -153,12 +133,14 @@ const ExprienceSection = () => {
                                     </span>
                                 </p>
 
-                                <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-                                    {exp.summary}
-                                </p>
+                                {exp.summary && (
+                                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
+                                        {exp.summary}
+                                    </p>
+                                )}
 
                                 <ul className="mt-3 space-y-1.5">
-                                    {exp.highlights.map((item) => (
+                                    {(exp.achievements ?? []).map((item) => (
                                         <li
                                             key={item}
                                             className="flex gap-2.5 text-sm text-muted"
@@ -193,7 +175,7 @@ const ExprienceSection = () => {
                         <ul className="mt-5 space-y-5">
                             {educations.map((edu, index) => (
                                 <li
-                                    key={`${edu.period}-${edu.title}`}
+                                    key={edu.id}
                                     style={{
                                         transitionDelay: `${280 + index * 140}ms`,
                                     }}
@@ -222,20 +204,22 @@ const ExprienceSection = () => {
                                     </span>
 
                                     <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-subtle">
-                                        {edu.period}
+                                        {formatExperienceDates(edu)}
                                     </p>
 
                                     <h4 className="mt-1 text-sm font-semibold text-ink">
-                                        {edu.title}
+                                        {edu.role}
                                     </h4>
 
                                     <p className="text-sm text-muted">
-                                        {edu.institution}
+                                        {edu.organization}
                                     </p>
 
-                                    <p className="mt-2 text-xs leading-relaxed text-muted">
-                                        {edu.description}
-                                    </p>
+                                    {edu.summary && (
+                                        <p className="mt-2 text-xs leading-relaxed text-muted">
+                                            {edu.summary}
+                                        </p>
+                                    )}
                                 </li>
                             ))}
                         </ul>
